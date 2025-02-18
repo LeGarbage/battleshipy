@@ -55,7 +55,7 @@ def main():
                     break
                 
                 result = ""
-                while not (result == "repeat") and not result == "invalid":
+                while  result == "repeat" or result == "invalid" or result == "":
                     # Process the opponent's move and send back the result
                     result = game.handle_opponent_move(data)
                     conn.send(result.encode())
