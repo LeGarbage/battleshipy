@@ -71,20 +71,33 @@ def main():
                 # OPPONENT'S TURN
                 print("\nWaiting for opponent's move...")
                 
-                # Receive the opponent's move (blocks until data arrives)
-                move = client.recv(1024).decode()
-                if not move:  # Connection lost
-                    break
-                
-                # Process the move and send back the result
-                result = game.handle_opponent_move(move)
-                client.send(result.encode())
-                
-                if result == "gameover":
-                    game.display_game_state()
-                    break
+                result = ""
+                is_valid = False
+                while not is_valid:
+                    # Receive the opponent's move (blocking call)
+                    data = client.recv(1024).decode()
+                    if not data:  # Connection closed by client
+                        break
                     
-                my_turn = True
+                    # Process the opponent's move and send back the result
+                    result = game.handle_opponent_move(data)
+                    client.send(result.encode())
+                    # Check if the result was invalid
+                    if result == "repeat" or result == "invalid":
+                        # If it was invalid, ask the client again
+                        continue
+                    else:
+                        # The result was valid and we don't have to ask again
+                        is_valid = True
+                else:
+                    # If the loop was exited naturally (not broken), continue the game
+                    if result == "gameover":
+                        game.display_game_state()
+                        break
+                    my_turn = True
+                # If the else block was not triggered, then the connection was closed and the game loop should end
+                if not my_turn:
+                    break
                 
     except ConnectionRefusedError:
         # This exception occurs when we can't connect to the server
