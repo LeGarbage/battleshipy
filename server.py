@@ -54,14 +54,15 @@ def main():
                 if not data:  # Connection closed by client
                     break
                 
-                # Process the opponent's move and send back the result
-                result = game.handle_opponent_move(data)
-                conn.send(result.encode())
-                
-                if result == "gameover":
-                    game.display_game_state()
-                    break
+                result = ""
+                while not (result == "repeat") and not result == "invalid":
+                    # Process the opponent's move and send back the result
+                    result = game.handle_opponent_move(data)
+                    conn.send(result.encode())
                     
+                    if result == "gameover":
+                        game.display_game_state()
+                        break
                 my_turn = True
             else:
                 # SERVER'S TURN
